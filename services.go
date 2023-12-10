@@ -304,12 +304,12 @@ func (p *AffinityGroupHostLabelsServiceAddRequest) Send() (*AffinityGroupHostLab
 	req.Header.Add("Version", "4")
 	req.Header.Add("Content-Type", "application/xml")
 	req.Header.Add("Accept", "application/xml")
-	// get OAuth access token
-	token, err := p.AffinityGroupHostLabelsService.connection.authenticate()
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
+		// get OAuth access token
+		//token, err := p.AffinityGroupHostLabelsService.connection.authenticate()
+		//if err != nil {
+		//	return nil, err
+		//}
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", "YWRtaW5AaW50ZXJuYWw6d2VpZGUyMDE5"))
 	// Send the request and wait for the response
 	resp, err := p.AffinityGroupHostLabelsService.connection.client.Do(req)
 	if err != nil {
@@ -317,6 +317,7 @@ func (p *AffinityGroupHostLabelsServiceAddRequest) Send() (*AffinityGroupHostLab
 	}
 	defer resp.Body.Close()
 	if p.AffinityGroupHostLabelsService.connection.logFunc != nil {
+
 		dumpReq, err := httputil.DumpRequestOut(req, true)
 		if err != nil {
 			return nil, err
