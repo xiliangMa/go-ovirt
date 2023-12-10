@@ -318,7 +318,7 @@ func (c *Connection) buildSsoAuthRequest() (*url.URL, map[string]string) {
 
 	// Compute the URL:
 	var ssoURL url.URL = *c.url
-	ssoURL.Path = fmt.Sprintf("/ovirt-engine/sso/oauth/%s", entryPoint)
+	ssoURL.Path = fmt.Sprintf("/engine/sso/oauth/%s", entryPoint)
 
 	// Return the URL and the parameters:
 	return &ssoURL, parameters
