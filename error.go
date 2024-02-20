@@ -1,7 +1,7 @@
 package ovirtsdk
 
 import (
-	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -133,53 +133,110 @@ func CheckAction(resBytes []byte, response *http.Response) (*Action, error) {
 }
 
 // BuildError constructs error
+//func BuildError(response *http.Response, fault *Fault) error {
+//	var buffer bytes.Buffer
+//	if fault != nil {
+//		if reason, ok := fault.Reason(); ok {
+//			if buffer.Len() > 0 {
+//				buffer.WriteString(" ")
+//			}
+//			buffer.WriteString(fmt.Sprintf("Fault reason is \"%s\".", reason))
+//		}
+//		if detail, ok := fault.Detail(); ok {
+//			if buffer.Len() > 0 {
+//				buffer.WriteString(" ")
+//			}
+//			buffer.WriteString(fmt.Sprintf("Fault detail is \"%s\".", detail))
+//		}
+//	}
+//	if response != nil {
+//		if buffer.Len() > 0 {
+//			buffer.WriteString(" ")
+//		}
+//		buffer.WriteString(fmt.Sprintf("HTTP response code is \"%d\".", response.StatusCode))
+//		buffer.WriteString(" ")
+//		buffer.WriteString(fmt.Sprintf("HTTP response message is \"%s\".", response.Status))
+//
+//		if Contains(response.StatusCode, []int{401, 403}) {
+//			return &AuthError{
+//				baseError{
+//					response.StatusCode,
+//					buffer.String(),
+//				},
+//			}
+//		} else if response.StatusCode == 404 {
+//			return &NotFoundError{
+//				baseError{
+//					response.StatusCode,
+//					buffer.String(),
+//				},
+//			}
+//		} else if response.StatusCode == 409 {
+//			return &ConflictError{
+//				baseError{
+//					response.StatusCode,
+//					buffer.String(),
+//				},
+//			}
+//		}
+//	}
+//	return errors.New(buffer.String())
+//}
+
+// BuildError constructs error
 func BuildError(response *http.Response, fault *Fault) error {
-	var buffer bytes.Buffer
+	var msg = make(map[string]interface{})
+	var msgStr string
+	//var buffer bytes.Buffer
 	if fault != nil {
 		if reason, ok := fault.Reason(); ok {
-			if buffer.Len() > 0 {
-				buffer.WriteString(" ")
-			}
-			buffer.WriteString(fmt.Sprintf("Fault reason is \"%s\".", reason))
+			//if buffer.Len() > 0 {
+			//	buffer.WriteString(" ")
+			//}
+			//buffer.WriteString(fmt.Sprintf("Fault reason is \"%s\".", reason))
+			msg["reason"] = reason
 		}
 		if detail, ok := fault.Detail(); ok {
-			if buffer.Len() > 0 {
-				buffer.WriteString(" ")
-			}
-			buffer.WriteString(fmt.Sprintf("Fault detail is \"%s\".", detail))
+			//if buffer.Len() > 0 {
+			//	buffer.WriteString(" ")
+			//}
+			//buffer.WriteString(fmt.Sprintf("Fault detail is \"%s\".", detail))
+			msg["detail"] = detail
 		}
 	}
 	if response != nil {
-		if buffer.Len() > 0 {
-			buffer.WriteString(" ")
-		}
-		buffer.WriteString(fmt.Sprintf("HTTP response code is \"%d\".", response.StatusCode))
-		buffer.WriteString(" ")
-		buffer.WriteString(fmt.Sprintf("HTTP response message is \"%s\".", response.Status))
-
+		//if buffer.Len() > 0 {
+		//	buffer.WriteString(" ")
+		//}
+		//buffer.WriteString(fmt.Sprintf("HTTP response code is \"%d\".", response.StatusCode))
+		//buffer.WriteString(" ")
+		//buffer.WriteString(fmt.Sprintf("HTTP response message is \"%s\".", response.Status))
+		msg["httpcode"] = response.StatusCode
+		msg["httpmsg"] = response.Status
+		msgByte, _ := json.Marshal(msg)
+		msgStr = string(msgByte)
 		if Contains(response.StatusCode, []int{401, 403}) {
 			return &AuthError{
 				baseError{
 					response.StatusCode,
-					buffer.String(),
+					msgStr,
 				},
 			}
 		} else if response.StatusCode == 404 {
 			return &NotFoundError{
 				baseError{
 					response.StatusCode,
-					buffer.String(),
+					msgStr,
 				},
 			}
 		} else if response.StatusCode == 409 {
 			return &ConflictError{
 				baseError{
 					response.StatusCode,
-					buffer.String(),
+					msgStr,
 				},
 			}
 		}
 	}
-
-	return errors.New(buffer.String())
+	return errors.New(msgStr)
 }
